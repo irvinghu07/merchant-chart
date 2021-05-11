@@ -78,11 +78,11 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
       volumes:
         - name: {{ .Values.configMap.volumeName | default "merchant-volume"}}
           configMap:
             name: {{ .Values.configMap.name | default "merchant-config"}}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
