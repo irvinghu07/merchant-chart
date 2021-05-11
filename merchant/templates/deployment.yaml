@@ -51,7 +51,7 @@ spec:
             successThreshold: {{ .Values.livenessProbe.successThreshold }}
             failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             httpGet:
-              path: /status
+              path: /api/v1/status
               port: {{ ternary "https" "http" .Values.healthcheckHttps }}
               {{- if .Values.healthcheckHttps }}
               scheme: HTTPS
@@ -68,7 +68,7 @@ spec:
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             httpGet:
-              path: /status
+              path: /api/v1/status
               port: {{ ternary "https" "http" .Values.healthcheckHttps }}
               {{- if .Values.healthcheckHttps }}
               scheme: HTTPS
