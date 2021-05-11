@@ -42,6 +42,7 @@ spec:
           volumeMounts:
             - name: {{ .Values.configMap.volumeName | default "merchant-volume"}}
               mountPath: {{ .Values.configMap.mountPath }}
+              subPath: merchant-config
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
