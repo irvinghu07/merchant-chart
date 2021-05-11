@@ -1,0 +1,37 @@
+stage: test
+dbInit: false
+depositAddress: ""
+vsysNetType: "M"
+vsysNodeAddress: "https://wallet.v.systems/api"
+serverPrivateKey: ""
+serverPublicKey: ""
+tokenId: ""
+kubeConfigPath: ""
+vsysTokenExchangeRate: 2.0
+
+middleware:
+  authenticationEnable: true
+  providerAllowEnable: false
+
+mongodb:
+  endpoint: "mongodb+srv://testdb:fGSbMCGdMSG5k2ux@cluster0.pgyad.mongodb.net/market-cli-test?retryWrites=true&w=majority"
+  endpointTest: "mongodb://localhost:27017"
+  timeout: 10
+  collectionPrefix: "vcloud_test"
+  indexCreation: true
+
+casbin:
+  enable: true
+  debug: true
+  model: "config/model.conf"
+  autoload: true
+  autoloadInterval: 10
+
+luaPlugin:
+  httpSharedKeyPrefix: "vsys-market"
+
+templateConf:
+  tempDir: "/templates"
+  uploadDomain: "127.0.0.1"
+  uploadPort: "3002"
+  uploadUri: "/api/v1/service/template/add"

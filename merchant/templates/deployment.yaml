@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "merchant.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "merchant.labels" . | nindent 4 }}
 spec:
@@ -13,8 +14,9 @@ spec:
       {{- include "merchant.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum | quote}}
+      {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
@@ -35,19 +37,52 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.exposePort | default 3001}}
               protocol: TCP
+          volumeMounts:
+            - name: {{ .Values.configMap.volumeName | default "merchant-volume"}}
+              mountPath: {{ .Values.configMap.mountPath }}
+          {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             httpGet:
-              path: /
-              port: http
+              path: /status
+              port: {{ ternary "https" "http" .Values.healthcheckHttps }}
+              {{- if .Values.healthcheckHttps }}
+              scheme: HTTPS
+              {{- end }}
+              {{- if .Values.livenessProbeHeaders }}
+              httpHeaders: {{- toYaml .Values.livenessProbeHeaders | nindent 16 }}
+              {{- end }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             httpGet:
-              path: /
-              port: http
+              path: /status
+              port: {{ ternary "https" "http" .Values.healthcheckHttps }}
+              {{- if .Values.healthcheckHttps }}
+              scheme: HTTPS
+              {{- end }}
+              {{- if .Values.readinessProbeHeaders }}
+              httpHeaders: {{- toYaml .Values.readinessProbeHeaders | nindent 16 }}
+              {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
+      volumes:
+        - name: {{ .Values.configMap.volumeName | default "merchant-volume"}}
+          configMap:
+            name: {{ .Values.configMap.name | default "merchant-config"}}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
